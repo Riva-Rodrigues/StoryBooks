@@ -32,17 +32,28 @@ if(process.env.NODE_ENV ==='devlopment'){
     app.use(morgan('dev'))
 }
 
+//handlebar helpers
+const {
+    formatDate} = require('./helpers/hbs')
+  
+
 //handlebars
 // Example of setting up exphbs with Express
-app.engine('.hbs', exphbs.engine({ defaultLayout:'main',extname: '.hbs' }));
+app.engine('.hbs', exphbs.engine({ helpers:{
+    formatDate,
+},defaultLayout:'main',extname: '.hbs' }));
 app.set('view engine', '.hbs');
 
+// Create a new MongoStore instance with mongoose connection
+const mongoStoreSession = new MongoStore({
+    mongoUrl:process.env.MONGO_URI, // Replace with your MongoDB connection URI
+});
 //sessions
 app.use(session({
     secret: 'keyboard cat',
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({mongoUrl: process.env.MONGO_URI,}),
+    store:mongoStoreSession,
   }))
 
 //passport middleware
@@ -55,7 +66,7 @@ app.use(express.static(path.join(__dirname,'public')))
 //routes
 app.use('/',require('./routes/index'))
 app.use('/auth',require('./routes/auth'))
-app.use('/stories',require('./routes/stories'))
+// app.use('/stories',require('./routes/stories'))
 
 const PORT = process.env.PORT || 5000
 
